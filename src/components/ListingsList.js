@@ -33,8 +33,6 @@ class ListingsList extends Component {
       <Content>
         <SearchBar
           placeholder='Type Here...'
-          placeholderTextColor="white"
-          inputStyle={{ color: "white" }}
           value={this.state.searchTerm}
           onChangeText={this.handleSearchChange}
         />
@@ -44,7 +42,7 @@ class ListingsList extends Component {
               <Thumbnail square size={80} source={{ uri: listing.imageUrl }} />
               <Body>
                 <Text>{listing.address}</Text>
-                <Text note>Its time to build a difference . .</Text>
+                <Text note>${listing.price}</Text>
               </Body>
           </ListItem>
           )}
