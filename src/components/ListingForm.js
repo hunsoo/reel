@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { addListing } from '../store/listings';
 import {Form, Item, Input, Text, Button, Icon} from 'native-base';
-import AddImage from './AddImage';
-
 
 class ListingForm extends Component {
 

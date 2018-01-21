@@ -1,6 +1,4 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Button } from 'react-native-elements';
 import { Provider } from 'react-redux';
 import firebase from 'firebase';
 import store from './src/store';

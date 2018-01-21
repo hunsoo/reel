@@ -3,12 +3,6 @@ import { Scene, Router, Actions } from 'react-native-router-flux';
 import ListingsList from './components/ListingsList';
 import AddListingForm from './components/ListingForm';
 import ListingDetail from './components/ListingDetail';
-import AddImage from "./components/AddImage";
-// import LoginForm from './components/LoginForm';
-// import EventList from './components/EventsList';
-// import AddEventForm from './components/AddEventForm';
-// import SingleEvent from './components/SingleEvent';
-// import EventChatView from './components/EventChatView';
 
 const RouterComponent = () => {
   return (
@@ -41,14 +35,14 @@ const RouterComponent = () => {
             key="listingDetail"
             component={ListingDetail}
             title="Listing Detail"
-            rightTitle="Add Image"
-            onRight={() => Actions.addImage()}
+            // rightTitle="Add Image"
+            // onRight={() => Actions.addImage()}
           />
-          <Scene
+          {/* <Scene
             key="addImage"
             component={AddImage}
             title="Add Image"
-          />
+          /> */}
         </Scene>
       </Scene>
     </Router>
