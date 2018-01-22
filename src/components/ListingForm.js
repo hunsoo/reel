@@ -69,7 +69,7 @@ class ListingForm extends Component {
         <Item key={field.name}>
             <Field name={field.name} iconName={field.iconName} placeholder={field.placeholder} underlayColor='#99d9f4' component={this.renderInput} />
         </Item>)}
-        <Button full onPress={handleSubmit((values) => createListing(values, this.state.address))}>
+        <Button full onPress={handleSubmit((values) => createListing(values, this.state.address, reset))}>
           <Text>Add</Text>
         </Button>
       </Form>
@@ -85,7 +85,7 @@ const mapStateToProps = ({ listing }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  createListing: async (values, address) => {
+  createListing: async (values, address, reset) => {
     const {bedrooms, bathrooms, price, description} = values;
     const encodedAddress = address.split(' ').join('+');
     const res = await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + encodedAddress + '&key=' + googleAPIKey);
@@ -106,6 +106,7 @@ const mapDispatchToProps = (dispatch) => ({
     };
 
     dispatch(addListing(newListing));
+    reset();
     Actions.listingsList();
   }
 });
