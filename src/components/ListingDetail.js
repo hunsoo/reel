@@ -1,53 +1,82 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Image, Button } from 'react-native';
-import { List, ListItem, Text, Thumbnail, Content, H1, H2 } from 'native-base';
+import { Image, Button, View, CameraRoll } from 'react-native';
+import { Card, List, ListItem, Text, Thumbnail, Container, Header, Content, Separator, H1, H2 } from 'native-base';
 import { ImagePicker, MapView } from 'expo';
 import {addNewImage} from '../store/listing';
-import {getLocation} from '../store/location';
 import firebase from 'firebase';
-import GoogleStaticMap from 'react-native-google-static-map';
+
+const googleAPIKey = 'AIzaSyAIF1HJQfwmNCmjuddywTAZhOlqYv8ZBxI';
 
 class ListingDetail extends Component {
-  componentDidMount() {
-    const { getGeocoded, listing} = this.props;
-    getGeocoded(listing.address);
-  }
 
   render() {
-    const {listing, location, pickImage, launchCamera} = this.props;
+    const {listing, pickImage, launchCamera} = this.props;
     const images = listing.images ? Object.keys(listing.images).map(id => listing.images[id]) : [];
-    const googleAPIKey = 'AIzaSyAIF1HJQfwmNCmjuddywTAZhOlqYv8ZBxI';
-    const center = listing.address.split(' ').join('+');
-    // const googleMap = 'https://maps.googleapis.com/maps/api/staticmap?center=' + center + '&zoom=15&size=480x640&scale=2&maptype=roadmap&key=' + googleAPIKey;
+    const title = listing.address + ' - $' + listing.price;
+    const details = Object.keys(listing.details).reverse().map(key => key + ': ' + listing.details[key]);
+    const {lat, lng} = listing.location;
 
     return (
+      <Card>
       <Content>
-        <H1>{listing.address} - {'$'+ listing.price}</H1>
+          <H1>{title}</H1>
         <H1>{'\n'}</H1>
-        <H2>Description</H2>
-        <Text>
-          {Object.keys(listing.description).reverse().map(key => key + ': ' + listing.description[key] + '\n')}
-        </Text>
-        <H1>{'\n'}</H1>
-        <H2>Exterior</H2>
+        {/* <Card> */}
+        <Separator bordered>
+          <H2>Details</H2>
+        </Separator>
+        <ListItem>
+          <Text>{listing.description}</Text>
+        </ListItem>
+        <ListItem>
+          <Text>
+            {details.join('\n')}
+          </Text>
+        </ListItem>
+        {/* </Card> */}
+        <Separator bordered>
+          <H2>Exterior</H2>
+        </Separator>
+        <ListItem>
         <Image
-          source={{uri: 'https://maps.googleapis.com/maps/api/streetview?size=400x400&location=' + center +
-          '&key=' + googleAPIKey}}
+          source={{uri: listing.imageUrl}}
           style={{ height: 300, width: null, flex: 1 }}
         />
-        <H1>{'\n'}</H1>
-        <H2>Location on the Map</H2>
-        <GoogleStaticMap
-          style={{ height: 400, width: null, flex: 1 }}
-          latitude={''+location.lat}
-          longitude={''+location.lng}
-          zoom={15}
-          size={{ width: 400, height: 400 }}
-          apiKey={googleAPIKey}
-        />
-        <H1>{'\n'}</H1>
-        <H2>Images</H2>
+        </ListItem>
+        <Separator bordered>
+          <H2>Location on the Map</H2>
+        </Separator>
+        <ListItem>
+        <View style={{ flex: 1 }}>
+          <MapView
+            initialRegion={{
+              latitude: lat,
+              longitude: lng,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+            style={{ height: 400, width: null, flex: 1 }}
+            showsUserLocation={true}
+          >
+            <MapView.Marker
+              coordinate={{latitude: lat, longitude: lng}}
+              title={title}
+              description={details.join(', ')}
+            />
+          </MapView>
+        </View>
+        </ListItem>
+        <Separator bordered>
+          <H2>Property Images</H2>
+        </Separator>
+        <List>
+          {images.map((imageURL, i) =>
+            <ListItem key={'image-' + i}>
+              <Image source={{ uri: imageURL }} style={{ height: 400, width: null, flex: 1 }} />
+            </ListItem>
+          )}
+        </List>
         <Button
           title="Add an image from camera roll"
           onPress={pickImage(listing.id)}
@@ -56,26 +85,18 @@ class ListingDetail extends Component {
           title="Take a new picture"
           onPress={launchCamera()}
         />
-        <List>
-          {images.map((imageURL, i) =>
-          <ListItem key={'image-' + i}>
-              <Image source={{ uri: imageURL }} style={{ height: 400, width: null, flex: 1 }}/>
-          </ListItem>
-          )}
-        </List>
       </Content>
+      </Card>
     )
   }
 }
 
-const mapStateToProps = ({ listing, location }) => ({
-  listing, location,
+const mapStateToProps = ({ listing }) => ({
+  listing,
 });
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getGeocoded: (address) => dispatch(getLocation(address)),
-
     pickImage: (listingId) => async () => {
       let result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
@@ -90,6 +111,7 @@ const mapDispatchToProps = (dispatch) => {
           name,
           type: "image/jpg"
         });
+
         try {
           const res = await fetch('https://us-central1-reel-stackathon.cloudfunctions.net/api/images/', {
             method: "POST",
@@ -108,10 +130,33 @@ const mapDispatchToProps = (dispatch) => {
       }
     },
     launchCamera: () => async() => {
-      let result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-      });
+      let camera = await ImagePicker.launchCameraAsync({});
+      if (!camera.cancelled) {
+        const uri = await CameraRoll.saveToCameraRoll(camera.uri);
+        const name = `picture-${new Date().getTime()}.jpg`;
+        const body = new FormData();
+        body.append("images", {
+          uri: uri,
+          name,
+          type: "image/jpg"
+        });
+
+        try {
+          const res = await fetch('https://us-central1-reel-stackathon.cloudfunctions.net/api/images/', {
+            method: "POST",
+            body,
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "multipart/form-data"
+            }
+          });
+
+          const url = await firebase.storage().ref(name).getDownloadURL();
+          dispatch(addNewImage(listingId, url));
+        } catch (err) {
+          console.log(err);
+        }
+      }
     }
   }
 }

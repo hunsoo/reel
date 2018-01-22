@@ -17,8 +17,10 @@ export const fetchListings = () => dispatch => {
 }
 
 export const addListing = listing => dispatch => {
-  firebase.database().ref('/listings/').child().set(listing)
-  .on('child_added', data => {
+  const ref = firebase.database().ref('/listings/');
+  const key = ref.push().key;
+  ref.child(key).update({...listing, id: key});
+  ref.on('child_added', data => {
     dispatch({ type: ADD_LISTING, listing: data.val() });
   });
 }
