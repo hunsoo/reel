@@ -6,9 +6,7 @@ import ReduxThunk from 'redux-thunk';
 import listings from './listings';
 import listing from './listing';
 
-
 // root reducer
-
 const rootReducer = combineReducers({
   form: formReducer,
   listings,

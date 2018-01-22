@@ -4,12 +4,15 @@ import {Card, Form, Item, Input, InputGroup, Text, Button, Icon, Label} from 'na
 import { Field, reduxForm } from 'redux-form';
 import { Actions } from 'react-native-router-flux';
 import { addListing } from '../store/listings';
+import GooglePlacesInput from './GooglePlacesInput';
 
 class ListingForm extends Component {
 
   constructor(props) {
     super(props);
+    this.state = {address: ''};
     this.renderInput = this.renderInput.bind(this);
+    this.renderGooglePlacesInput = this.renderGooglePlacesInput.bind(this);
   }
 
   renderInput({ input, placeholder='', iconName='ios-code-working', label, type, meta: { pristine, touched, error, warning } }) {
@@ -26,11 +29,29 @@ class ListingForm extends Component {
     )
   }
 
+  renderGooglePlacesInput({ input, placeholder = '', iconName = 'ios-code-working', label, type, meta: { pristine, touched, error, warning } }) {
+    var hasError = false;
+    if (error !== undefined && error !== {}) {
+      hasError = true;
+    }
+    return (
+      <InputGroup iconRight error={hasError}>
+        <Icon name={iconName} />
+        <GooglePlacesInput placeholder={placeholder} {...input}
+          onPress={(data, details = null) => { // 'details' is provided when fetchDetails = true
+            this.setState({address: data.description});
+          }}
+        />
+        {hasError ? <Text>{error}</Text> : <Text />}
+      </InputGroup>
+    )
+  }
+
   render() {
     const { showPassword, handleSubmit, pristine, submitting, values, reset } = this.props;
     const {createListing} = this.props;
+    const address = { name: 'address', placeholder: 'Enter Address', iconName: 'pin' };
     const fields = [
-      {name: 'address', placeholder: 'Address', iconName: 'pin'},
       {name: 'price', placeholder: 'Price', iconName: 'pricetag'},
       {name: 'bedrooms', placeholder: '# of Bedrooms', iconName: 'home'},
       {name: 'bathrooms', placeholder: '# of Bathrooms', iconName: 'woman'},
@@ -39,11 +60,16 @@ class ListingForm extends Component {
     return (
       <Card>
       <Form>
+        <Item>
+        {/* <GooglePlacesInput /> */}
+          <Field name="address" iconName="pin" placeholder="Enter Address" underlayColor="#99d9f4"
+          component={this.renderGooglePlacesInput} />
+        </Item>
         {fields.map(field =>
         <Item key={field.name}>
             <Field name={field.name} iconName={field.iconName} placeholder={field.placeholder} underlayColor='#99d9f4' component={this.renderInput} />
         </Item>)}
-        <Button full onPress={handleSubmit(createListing)}>
+        <Button full onPress={handleSubmit((values) => createListing(values, this.state.address))}>
           <Text>Add</Text>
         </Button>
       </Form>
@@ -59,8 +85,8 @@ const mapStateToProps = ({ listing }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  createListing: async (values) => {
-    const {address, bedrooms, bathrooms, price, description} = values;
+  createListing: async (values, address) => {
+    const {bedrooms, bathrooms, price, description} = values;
     const encodedAddress = address.split(' ').join('+');
     const res = await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + encodedAddress + '&key=' + googleAPIKey);
     const geocoded = await res.json();

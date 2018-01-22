@@ -5,7 +5,7 @@ import { Content, Item, Icon, Input, Button, List, ListItem, Text, Thumbnail, Bo
 import { SearchBar } from 'react-native-elements';
 import {Actions} from 'react-native-router-flux';
 import { fetchListings } from '../store/listings';
-import {selectListing} from '../store/listing';
+import { selectListing } from '../store/listing';
 
 class ListingsList extends Component {
 

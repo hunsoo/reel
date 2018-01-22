@@ -35,14 +35,7 @@ const RouterComponent = () => {
             key="listingDetail"
             component={ListingDetail}
             title="Listing Detail"
-            // rightTitle="Add Image"
-            // onRight={() => Actions.addImage()}
           />
-          {/* <Scene
-            key="addImage"
-            component={AddImage}
-            title="Add Image"
-          /> */}
         </Scene>
       </Scene>
     </Router>
