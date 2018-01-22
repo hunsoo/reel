@@ -83,7 +83,7 @@ class ListingDetail extends Component {
         />
         <Button
           title="Take a new picture"
-          onPress={launchCamera()}
+            onPress={launchCamera(listing.id)}
         />
       </Content>
       </Card>
@@ -129,7 +129,8 @@ const mapDispatchToProps = (dispatch) => {
         }
       }
     },
-    launchCamera: () => async() => {
+
+    launchCamera: (listingId) => async() => {
       let camera = await ImagePicker.launchCameraAsync({});
       if (!camera.cancelled) {
         const uri = await CameraRoll.saveToCameraRoll(camera.uri);
